@@ -58,28 +58,29 @@ export const AuthProvider = ({ children }) => {
                 },
                 body: JSON.stringify({ username, password }),
             });
-
+    
+            const data = await res.json(); // 无论成功或失败都先解析 json
+    
             if (!res.ok) {
-                const error = await res.json();
-                return error.message;
+                return data.message || "Login failed";
             }
-
-            const data = await res.json();
+    
             localStorage.setItem("token", data.token);
-
+    
             const profileRes = await fetch(`${BACKEND_URL}/user/me`, {
                 headers: {
                     Authorization: `Bearer ${data.token}`,
                 },
             });
-
+    
             const profileData = await profileRes.json();
             setUser(profileData.user);
             navigate("/profile");
         } catch (error) {
-            return "Something went wrong";
+            return error?.message || "Something went wrong";
         }
     };
+    
 
     /**
      * 注册函数
@@ -93,17 +94,19 @@ export const AuthProvider = ({ children }) => {
                 },
                 body: JSON.stringify({ username, firstname, lastname, password }),
             });
-
+    
+            const data = await res.json(); // 不管成功与否都解析
+    
             if (!res.ok) {
-                const error = await res.json();
-                return error.message;
+                return data.message || "Registration failed";
             }
-
+    
             navigate("/success");
         } catch (error) {
-            return "Something went wrong";
+            return error?.message || "Something went wrong";
         }
     };
+    
 
     return (
         <AuthContext.Provider value={{ user, login, logout, register }}>
